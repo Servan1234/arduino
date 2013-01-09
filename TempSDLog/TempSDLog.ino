@@ -16,8 +16,8 @@
 int DS18S20_Pin = 2;
 int SS_pin = 10;
 int CS_pin = 10;
-int read_delay = 60000;
-char* filename = "temp.csv";
+int read_delay;
+char* filename;
 OneWire ds(DS18S20_Pin);
 File myFile;
 RTC_DS1307 RTC;
@@ -25,20 +25,15 @@ RTC_DS1307 RTC;
 void setup(void) {
   Wire.begin();
   RTC.begin();
-  Serial.begin(57600);
   pinMode(SS_pin, OUTPUT);
   if (!SD.begin(CS_pin)) {
-    Serial.println("initialization failed!");
     return;
   }
-  Serial.println("initialization done.");
-
+  read_delay = 5000;
+  filename = "temp.csv";
   myFile = SD.open(filename, FILE_WRITE);
   if (myFile) {
-    Serial.println("Log file temp.txt found/created");
     myFile.close();
-  } else {
-    Serial.println("error opening temp.txt");
   }
 }
 
@@ -46,19 +41,13 @@ void loop(void) {
   delay(read_delay);
 
   float temperature = getTemp();
-  Serial.print("Read temperature: ");
-  Serial.println(temperature);
 
   myFile = SD.open(filename, FILE_WRITE);
   if (myFile) {
-    Serial.print("Writing temperature to log file...");
     myFile.print(getDateTime());
     myFile.print(",");
     myFile.println(temperature);
     myFile.close();
-    Serial.println("done.");
-  } else {
-    Serial.println("error opening temp.txt");
   }
 }
 
@@ -74,12 +63,12 @@ float getTemp(){
   }
 
   if (OneWire::crc8( addr, 7) != addr[7]) {
-      Serial.println("CRC is not valid!");
+//      Serial.println("CRC is not valid!");
       return -1000;
   }
 
   if (addr[0] != 0x10 && addr[0] != 0x28) {
-      Serial.print("Device is not recognized");
+//      Serial.print("Device is not recognized");
       return -1000;
   }
 
@@ -107,31 +96,25 @@ float getTemp(){
 String getDateTime() {
   DateTime now = RTC.now();
   String str_datetime;
-  int tmp;
 
   str_datetime = "";
   str_datetime += int(now.year());
-  tmp = now.month();
-  if (tmp < 10)
-    str_datetime += "0";
-  str_datetime += int(tmp);
-  tmp = now.day();
-  if (tmp < 10)
-    str_datetime += "0";
-  str_datetime += int(tmp);
-  tmp = now.hour();
-  if (tmp < 10)
-    str_datetime += "0";
-  str_datetime += int(tmp);
-  tmp = now.minute();
-  if (tmp < 10)
-    str_datetime += "0";
-  str_datetime += int(tmp);
-  tmp = now.second();
-  if (tmp < 10)
-    str_datetime += "0";
-  str_datetime += int(tmp);
+  str_datetime += zeroPad(now.month());
+  str_datetime += zeroPad(now.day());
+  str_datetime += zeroPad(now.hour());
+  str_datetime += zeroPad(now.minute()); 
+  str_datetime += zeroPad(now.second());
   
   return str_datetime;
 }
 
+String zeroPad(uint8_t a) {
+  int n = int(a);
+  String s = "";
+  
+  if (n < 10)
+     s = "0";
+  s += n;
+  
+  return s;
+}
