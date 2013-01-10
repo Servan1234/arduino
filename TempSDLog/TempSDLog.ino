@@ -16,7 +16,7 @@
 int DS18S20_Pin = 2;
 int SS_pin = 10;
 int CS_pin = 10;
-int read_delay;
+unsigned long read_delay;
 char* filename;
 OneWire ds(DS18S20_Pin);
 File myFile;
@@ -29,7 +29,7 @@ void setup(void) {
   if (!SD.begin(CS_pin)) {
     return;
   }
-  read_delay = 5000;
+  read_delay = 60000;
   filename = "temp.csv";
   myFile = SD.open(filename, FILE_WRITE);
   if (myFile) {
