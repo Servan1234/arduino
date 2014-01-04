@@ -16,7 +16,6 @@
 int DS18S20_Pin = 2;
 int SS_pin = 10;
 int CS_pin = 10;
-unsigned long read_delay;
 char* filename;
 OneWire ds(DS18S20_Pin);
 File myFile;
@@ -29,26 +28,18 @@ void setup(void) {
   if (!SD.begin(CS_pin)) {
     return;
   }
-  read_delay = 60000;
   filename = "temp.csv";
-  myFile = SD.open(filename, FILE_WRITE);
-  if (myFile) {
-    myFile.close();
-  }
 }
 
-void loop(void) {
-  delay(read_delay);
-
-  float temperature = getTemp();
-
+void loop(void) { 
   myFile = SD.open(filename, FILE_WRITE);
   if (myFile) {
     myFile.print(getDateTime());
     myFile.print(",");
-    myFile.println(temperature);
+    myFile.println(getTemp());
     myFile.close();
   }
+  delay(10000);
 }
 
 float getTemp(){
@@ -118,3 +109,4 @@ String zeroPad(uint8_t a) {
   
   return s;
 }
+
